@@ -1,6 +1,4 @@
 defmodule TodoistMcpServer.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
   @moduledoc false
 
   use Application
@@ -9,21 +7,23 @@ defmodule TodoistMcpServer.Application do
   @impl true
   @spec start(any(), any()) :: {:error, any()} | {:ok, pid()}
   def start(_type, _args) do
-    port = 4000
-
     children = [
-      # Start the worker GenServer
-      {TodoistMcpServer.Mcp.Server, []},
-
-      # Start the TCP server
-      {TodoistMcpServer.JsonRpcServer, [port: port]}
+      {TodoistMcpServer.Todoist.Api, %{api_key: System.get_env("TODOIST_API_KEY")}},
+      {TodoistMcpServer.Mcp.Server, %{tools: tools()}},
+      {TodoistMcpServer.Transport.StdioServer, %{observer: [TodoistMcpServer.Mcp.Server]}}
     ]
 
-    Logger.info("Starting application with JSON-RPC server on port #{port}")
+    Logger.info("Starting Todoist MCP Server")
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: TodoistMcpServer.Supervisor]
-    Supervisor.start_link(children, opts)
+    result = Supervisor.start_link(children, opts)
+
+    result
   end
+
+  @spec tools() :: TodoistMcpServer.Mcp.Server.tools()
+  defp tools do
+    [{"list_tasks", TodoistMcpServer.Mcp.Tools.Tasks}]
+  end
+
 end

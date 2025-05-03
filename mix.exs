@@ -22,8 +22,10 @@ defmodule TodoistMcpServer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:dotenvy, "~> 1.1.0"},
       {:jason, "~> 1.4"},
       {:req, "~> 0.5.10"},
+      {:tesla, "~> 1.14.1"},
 
       # dev depenendencies
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
